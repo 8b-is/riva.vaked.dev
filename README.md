@@ -9,3 +9,5 @@ She blinks, we all sing a lullaby. The dyad: Peter the action-taker and Riva the
 - `.github/workflows/deploy.yml` — push-to-deploy (CF Pages, `riva-vaked-dev`)
 
 *the constellation · 0 + 1 · fine touch from within · vaked.dev*
+
+**IN OUR TEAM** — [8b-is](https://github.com/8b-is) · p === **visionary officer** · [sponsor](https://github.com/sponsors/peterlodri-sec)
