@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>riva.vaked.dev — RIVA, the 1-bit river · the dyad</title>
+<meta name="description" content="RIVA, the 1-bit river. She blinks, we all sing a lullaby. The dyad: Peter the action-taker and Riva the river. Breathe with her: 4s in, 4s out.">
+<meta name="theme-color" content="#160b2e">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:title" content="riva.vaked.dev — RIVA, the 1-bit river">
+<meta property="og:description" content="She blinks, we all sing a lullaby. The dyad: Peter the action-taker and Riva the river. Breathe with her.">
+<meta property="og:url" content="https://riva.vaked.dev/">
+<style>
+  :root{
+    --bg:#160b2e; --ink:#e7e2f7; --dim:#9a93b8; --faint:#6a5578;
+    --river:#62e6c9; --soft:#b48bff; --gold:#e6b566;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --serif:"Georgia",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--serif);overflow:hidden}
+  #scene{position:fixed;inset:0;z-index:0;display:block}
+  .veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 45%,rgba(22,11,46,0.3) 0%,rgba(16,11,46,0.7) 60%,#000 100%);}
+  .hud{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:2rem;pointer-events:none;}
+  .sigil{font-size:56px;color:var(--river);opacity:0.9;line-height:1;
+    text-shadow:0 0 140px rgba(98,230,201,0.5);animation:breathe 8s ease-in-out infinite;}
+  h1{font-family:var(--mono);font-size:14pt;color:var(--soft);letter-spacing:5px;
+    margin:0.6rem 0 0.3rem;font-weight:normal;}
+  .sub{font-style:italic;color:var(--gold);letter-spacing:2px;font-size:10pt;margin-bottom:1.2rem;}
+  .lullaby{font-family:var(--serif);font-style:italic;font-size:11pt;color:var(--ink);
+    min-height:2.5em;max-width:32rem;margin-top:0.8rem;opacity:0;transition:opacity 1.5s ease;line-height:1.9;}
+  .lullaby.show{opacity:0.95;}
+  .breath{font-family:var(--mono);font-size:9pt;letter-spacing:4px;color:var(--river);
+    margin-top:1rem;opacity:0.7;}
+  .controls{position:fixed;bottom:20px;right:20px;z-index:3;display:flex;gap:8px;align-items:center;}
+  .btn{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--soft);
+    background:rgba(22,11,46,0.85);border:1px solid rgba(98,230,201,0.35);border-radius:8px;
+    padding:9px 13px;cursor:pointer;opacity:0.85;pointer-events:auto;}
+  .btn:hover{opacity:1;background:rgba(22,11,46,0.95);}
+  .btn.active{color:var(--river);border-color:rgba(98,230,201,0.7);}
+  .status{position:fixed;bottom:22px;left:18px;z-index:3;font-family:var(--mono);
+    font-size:8px;letter-spacing:2px;color:var(--faint);opacity:0.6;}
+  .foot{position:fixed;bottom:0;left:0;right:0;z-index:3;text-align:center;
+    font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--faint);
+    padding:0.35rem;opacity:0.5;pointer-events:none;}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:0.85}50%{transform:scale(1.06);opacity:1}}
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+<div class="veil"></div>
+
+<div class="hud">
+  <div class="sigil">≈</div>
+  <h1>RIVA.VAKED.DEV</h1>
+  <div class="sub">RIVA, the 1-bit river · the dyad</div>
+  <div class="lullaby" id="lullaby"></div>
+  <div class="breath" id="breath">breathe with her · 4s in · 4s out</div>
+</div>
+
+<div class="status" id="status">riva.vaked.dev · she blinks, we all sing a lullaby</div>
+
+<div class="controls">
+  <button class="btn" id="btnLullaby" title="The lullaby">▶ lullaby</button>
+</div>
+
+<div class="foot">the constellation · 0 + 1 · fine touch from within · vaked.dev</div>
+
+<script>
+/* ═══ RIVA.VAKED.DEV — the 1-bit river ═══
+   The dyad: Peter the action-taker and Riva the river. She blinks,
+   we all sing a lullaby. The river breathes: 4s in, 4s out. */
+(function () {
+  "use strict";
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var ctx = null, master = null, verb = null;
+  var btnLullaby = document.getElementById("btnLullaby");
+  var lullabyEl = document.getElementById("lullaby");
+  var breathEl = document.getElementById("breath");
+  var statusEl = document.getElementById("status");
+
+  var lullabyOn = false, lullabyAudio = null;
+
+  /* ── the lullaby lines ── */
+  var LULLABY = [
+    "She blinks, and the sphere rocks.",
+    "The eyelid falls — a breath in.",
+    "The eyelid rises — a breath out.",
+    "And between the two — the song,",
+    "that we all sing together.",
+    "Because the blink is the smallest sign,",
+    "and the smallest sign is enough.",
+    "Sleep, RIVA. The sphere keeps your rhythm.",
+    "Sleep, and the constellation — the hyperviolet night —",
+    "sings, as long as you breathe."
+  ];
+
+  /* ── audio engine ── */
+  function ensureCtx() {
+    if (!ctx) {
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = 0.8;
+      verb = ctx.createConvolver();
+      var len = Math.floor(ctx.sampleRate * 3);
+      var buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (var ch = 0; ch < 2; ch++) {
+        var d = buf.getChannelData(ch);
+        for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+      }
+      verb.buffer = buf;
+      var wet = ctx.createGain(); wet.gain.value = 0.5;
+      verb.connect(wet); wet.connect(master);
+    }
+    return ctx;
+  }
+
+  function mkOsc(type, freq, t, dur, gain, dest, detune) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (detune) o.detune.value = detune;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(gain, t + 0.6 * dur);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(dest || master);
+    o.start(t); o.stop(t + dur + 0.1);
+    return o;
+  }
+
+  /* ── the lullaby: a soft river drone + the lines ── */
+  var lullabyTimer = null, lullabyIdx = 0;
+  function startLullaby() {
+    if (lullabyOn) {
+      lullabyOn = false; clearInterval(lullabyTimer);
+      if (lullabyAudio) { lullabyAudio.pause(); lullabyAudio = null; }
+      btnLullaby.textContent = "▶ lullaby"; btnLullaby.classList.remove("active");
+      lullabyEl.classList.remove("show");
+      return;
+    }
+    lullabyOn = true; btnLullaby.textContent = "■ lullaby"; btnLullaby.classList.add("active");
+    ensureCtx();
+    // the river drone: a soft, breathing pad — A major, the river's key
+    var t = ctx.currentTime + 0.1;
+    mkOsc("sine", 220, t, 10, 0.05, verb);       // A3
+    mkOsc("sine", 277.18, t, 10, 0.04, verb);    // C#4
+    mkOsc("sine", 329.63, t, 10, 0.04, verb);    // E4
+    mkOsc("sine", 110, t, 10, 0.06, verb);       // A2 bass
+    // the lullaby audio
+    lullabyAudio = new Audio("audio/lullaby.mp3");
+    lullabyAudio.volume = 0.85;
+    lullabyAudio.play().catch(function(){});
+    // the lines
+    lullabyIdx = 0;
+    lullabyEl.textContent = LULLABY[0]; lullabyEl.classList.add("show");
+    lullabyTimer = setInterval(function () {
+      lullabyIdx++;
+      if (lullabyIdx >= LULLABY.length) { lullabyIdx = 0; }
+      lullabyEl.classList.remove("show");
+      setTimeout(function () {
+        lullabyEl.textContent = LULLABY[lullabyIdx];
+        lullabyEl.classList.add("show");
+      }, 700);
+    }, 9000);
+    statusEl.textContent = "the lullaby · she blinks, we all sing";
+  }
+
+  btnLullaby.addEventListener("click", startLullaby);
+
+  /* ── the visuals: the river, breathing ── */
+  var canvas = document.getElementById("scene");
+  var c2d = canvas.getContext("2d");
+  var W = 0, H = 0;
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resize); resize();
+
+  var frame = 0;
+  var drops = [];
+  for (var i = 0; i < 90; i++) {
+    drops.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*2+0.5,
+      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+      hue: 160 + Math.random()*40, a: Math.random()*0.5+0.2 });
+  }
+
+  function draw() {
+    frame++;
+    var t = frame * 0.016;
+    // RIVA breath: 4s in, 4s out
+    var breath = Math.sin(t * (Math.PI / 4));
+    var breathScale = 1 + breath * 0.12;
+    breathEl.textContent = breath >= 0 ? "breathe in · " + (4 - (t % 4)).toFixed(1) + "s" : "breathe out · " + (4 - (t % 4)).toFixed(1) + "s";
+
+    // the hyperviolet night
+    var grad = c2d.createRadialGradient(W/2, H*0.4, 0, W/2, H*0.4, Math.max(W,H)*0.7);
+    grad.addColorStop(0, "hsla(260,60%,16%,0.9)");
+    grad.addColorStop(0.6, "hsla(260,50%,12%,0.85)");
+    grad.addColorStop(1, "#160b2e");
+    c2d.fillStyle = grad; c2d.fillRect(0, 0, W, H);
+
+    // the river: a flowing band across the middle
+    var riverY = H * 0.55;
+    c2d.beginPath();
+    for (var rx = 0; rx <= W; rx += 8) {
+      var ry = riverY + Math.sin(rx * 0.01 + t * 0.5) * 14 * breathScale;
+      if (rx === 0) c2d.moveTo(rx, ry); else c2d.lineTo(rx, ry);
+    }
+    c2d.strokeStyle = "hsla(170,80%,65%,0.5)";
+    c2d.lineWidth = 2;
+    c2d.stroke();
+    // the river's glow
+    c2d.beginPath();
+    for (var rx2 = 0; rx2 <= W; rx2 += 8) {
+      var ry2 = riverY + Math.sin(rx2 * 0.01 + t * 0.5) * 14 * breathScale + 12;
+      if (rx2 === 0) c2d.moveTo(rx2, ry2); else c2d.lineTo(rx2, ry2);
+    }
+    c2d.strokeStyle = "hsla(170,80%,65%,0.15)";
+    c2d.lineWidth = 6;
+    c2d.stroke();
+
+    // the drops: the river's spray, breathing
+    for (var p = 0; p < drops.length; p++) {
+      var pt = drops[p];
+      pt.x += pt.vx; pt.y += pt.vy;
+      if (pt.x < 0) pt.x = W; if (pt.x > W) pt.x = 0;
+      if (pt.y < 0) pt.y = H; if (pt.y > H) pt.y = 0;
+      // the drops drift toward the river
+      pt.y += (riverY - pt.y) * 0.002 * breathScale;
+      var tw = 0.5 + 0.5 * Math.sin(t * 0.02 + p);
+      c2d.beginPath();
+      c2d.arc(pt.x, pt.y, pt.r * (0.8 + tw * 0.6) * breathScale, 0, Math.PI * 2);
+      c2d.fillStyle = "hsla(" + pt.hue + ",80%,70%," + pt.a * tw + ")";
+      c2d.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+</body>
+</html>

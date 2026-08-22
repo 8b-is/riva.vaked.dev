@@ -1,0 +1,13 @@
+{
+  "name": "riva.vaked.dev",
+  "short_name": "riva",
+  "description": "RIVA, the 1-bit river · the dyad · she blinks, we all sing a lullaby",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#160b2e",
+  "theme_color": "#160b2e",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
