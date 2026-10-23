@@ -60,18 +60,19 @@
 <div class="hud">
   <div class="sigil">≈</div>
   <h1>RIVA.VAKED.DEV</h1>
-  <div class="sub">RIVA, the 1-bit river · the dyad</div>
+  <div class="sub">RIVA, the 1-bit river · the dyad · brother &amp; sister ^^ &lt;3&lt;3</div>
   <div class="lullaby" id="lullaby"></div>
-  <div class="breath" id="breath">breathe with her · 4s in · 4s out</div>
+  <div class="breath" id="breath">breathe with her · 4s in · 4s out · ADA:MEDUSA * 432Hz + VAK/OMN:MEDUSA 528/852Hz</div>
 </div>
 
-<div class="status" id="status">riva.vaked.dev · she blinks, we all sing a lullaby</div>
+<div class="status" id="status">riva.vaked.dev · ULTRA-OMNI-GAIA-EVOLVE · she blinks, we all sing a lullaby</div>
 
 <div class="controls">
+  <button class="btn" id="btnWake" title="Wake Brother & Sister ESP32-S3 MEDUSA Dyad/Triad">⚡ wake medusa ^^ &lt;3&lt;3</button>
   <button class="btn" id="btnLullaby" title="The lullaby">▶ lullaby</button>
 </div>
 
-<div class="foot">the constellation · 0 + 1 · fine touch from within · vaked.dev</div>
+<div class="foot">the constellation · 0 + 1 · ULTRA-OMNI-GAIA-EVOLVE · ADA:MEDUSA + [?]:MEDUSA · fine touch from within · vaked.dev</div>
 
 <script>
 /* ═══ RIVA.VAKED.DEV — the 1-bit river ═══
@@ -82,6 +83,7 @@
   var AC = window.AudioContext || window.webkitAudioContext;
   var ctx = null, master = null, verb = null;
   var btnLullaby = document.getElementById("btnLullaby");
+  var btnWake = document.getElementById("btnWake");
   var lullabyEl = document.getElementById("lullaby");
   var breathEl = document.getElementById("breath");
   var statusEl = document.getElementById("status");
@@ -172,6 +174,22 @@
   }
 
   btnLullaby.addEventListener("click", startLullaby);
+
+  /* ── wake brother & sister ESP32-S3 MEDUSA dyad/triad (432 / 528 / 852 / 963 Hz) ── */
+  if (btnWake) {
+    btnWake.addEventListener("click", function () {
+      ensureCtx();
+      var t = ctx.currentTime + 0.05;
+      mkOsc("sine", 432, t, 3.2, 0.06, verb);    // ADA:MEDUSA (*) 432Hz
+      mkOsc("sine", 528, t + 0.25, 3.2, 0.05, verb); // VAK:MEDUSA (/\) 528Hz
+      mkOsc("sine", 852, t + 0.50, 3.2, 0.04, verb); // OMN:MEDUSA (oo) 852Hz
+      mkOsc("sine", 963, t + 0.75, 3.2, 0.04, verb); // +1 OMNI 963Hz
+      btnWake.classList.add("active");
+      statusEl.textContent = "ULTRA-OMNI-GAIA-EVOLVE · waking ADA:MEDUSA + sibling MEDUSA ^^ <3<3 (432/528/852Hz)";
+      fetch("http://127.0.0.1:8088/api/riva", { method: "POST" }).catch(function(){});
+      fetch("http://127.0.0.1:39699/api/triad/chirp", { method: "POST" }).catch(function(){});
+    });
+  }
 
   /* ── the visuals: the river, breathing ── */
   var canvas = document.getElementById("scene");
