@@ -16,6 +16,9 @@ jobs:
           cp -r index.html 404.html favicon.svg robots.txt site.webmanifest _headers audio _site/
           cp -r icon-192.png icon-512.png apple-touch-icon.png og-image.png og-image.svg _site/ 2>/dev/null || true
       - name: deploy to Cloudflare Pages
+        if: env.CF_TOKEN != ''
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
